@@ -1,3 +1,4 @@
+
 #include <iostream>
 using namespace std;
 
@@ -59,43 +60,119 @@ public:
 
     Node* insert(Node* node, int key)
     {
-        if(!node)
+        if (!node)
         {
             return new Node(key);
         }
-        else if(key < node->key)
+        else if (key < node->key)
         {
             node->left = insert(node->left, key);
         }
-        else if(key > node->key)
+        else if (key > node->key)
         {
             node->right = insert(node->right, key);
         }
+        else
+        {
+            return node; // Duplicate keys are not allowed
+        }
 
-        node->height = getHeight(node);
+        node->height = 1 + max(getHeight(node->left), getHeight(node->right));
 
         int balance = getBalanceFactor(node);
 
-        if(balance > 1 && key < node->left->key)
+        if (balance > 1 && key < node->left->key)
         {
             return rightRotate(node);
         }
-        else if(balance < -1 && key > node->right->key)
+        else if (balance < -1 && key > node->right->key)
         {
             return leftRotate(node);
         }
-        else if(balance > 1 && key > node->left->key)
+        else if (balance > 1 && key > node->left->key)
         {
             node->left = leftRotate(node->left);
             return rightRotate(node);
         }
-        else if(balance < -1 && key < node->right->key)
+        else if (balance < -1 && key < node->right->key)
         {
             node->right = rightRotate(node->right);
             return leftRotate(node);
         }
 
         return node;
+    }
+
+    Node* minValueNode(Node* node)
+    {
+        Node* current = node;
+        while (current && current->left != nullptr)
+        {
+            current = current->left;
+        }
+        return current;
+    }
+
+    Node* deleteNode(Node* root, int key)
+    {
+        if (!root)
+        {
+            return root;
+        }
+
+        if (key < root->key)
+        {
+            root->left = deleteNode(root->left, key);
+        }
+        else if (key > root->key)
+        {
+            root->right = deleteNode(root->right, key);
+        }
+        else
+        {
+            if (!root->left || !root->right)
+            {
+                Node* temp = root->left ? root->left : root->right;
+                delete root;
+                return temp;
+            }
+            else
+            {
+                Node* temp = minValueNode(root->right);
+                root->key = temp->key;
+                root->right = deleteNode(root->right, temp->key);
+            }
+        }
+
+        if (!root)
+        {
+            return root;
+        }
+
+        root->height = 1 + max(getHeight(root->left), getHeight(root->right));
+
+        int balance = getBalanceFactor(root);
+
+        if (balance > 1 && getBalanceFactor(root->left) >= 0)
+        {
+            return rightRotate(root);
+        }
+        else if (balance > 1 && getBalanceFactor(root->left) < 0)
+        {
+            root->left = leftRotate(root->left);
+            return rightRotate(root);
+        }
+        else if (balance < -1 && getBalanceFactor(root->right) <= 0)
+        {
+            return leftRotate(root);
+        }
+        else if (balance < -1 && getBalanceFactor(root->right) > 0)
+        {
+            root->right = rightRotate(root->right);
+            return leftRotate(root);
+        }
+
+        return root;
     }
 
     void inOrder(Node* root)
@@ -122,7 +199,14 @@ int main()
     root = avl.insert(root, 12);
     root = avl.insert(root, 11);
 
-    cout << "In-order traversal of the AVL tree:" << endl;
+    cout << "In-order traversal of the AVL tree before deletion:" << endl;
+    avl.inOrder(root);
+    cout << endl;
+
+    root = avl.deleteNode(root, 10);
+    root = avl.deleteNode(root, 9);
+
+    cout << "In-order traversal of the AVL tree after deletion:" << endl;
     avl.inOrder(root);
     cout << endl;
 
