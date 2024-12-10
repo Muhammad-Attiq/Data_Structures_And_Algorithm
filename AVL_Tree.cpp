@@ -1,47 +1,29 @@
-
 #include <iostream>
 using namespace std;
 
 class Node
 {
 public:
-    int key;
+    int data;
     Node* left;
     Node* right;
     int height;
-
-    Node(int value)
-    {
-        key = value;
-        left = right = nullptr;
-        height = 1;
-    }
+    Node(int value) : data(value), height(1), left(nullptr), right(nullptr) {}
 };
 
-class AVLTree
+class BST
 {
-public:
+private:
+    Node* root;
+
     int getHeight(Node* node)
     {
         return node ? node->height : 0;
     }
 
-    int getBalanceFactor(Node* node)
+    int getBalance(Node* node)
     {
         return node ? getHeight(node->left) - getHeight(node->right) : 0;
-    }
-
-    Node* rightRotate(Node* y)
-    {
-        Node* x = y->left;
-        Node* T = x->right;
-        x->right = y;
-        y->left = T;
-
-        x->height = 1 + max(getHeight(x->left), getHeight(x->right));
-        y->height = 1 + max(getHeight(y->left), getHeight(y->right));
-
-        return x;
     }
 
     Node* leftRotate(Node* x)
@@ -58,54 +40,166 @@ public:
         return y;
     }
 
-    Node* insert(Node* node, int key)
+    Node* rightRotate(Node* y)
     {
-        if (!node)
+        Node* x = y->left;
+        Node* T = x->right;
+
+        x->right = y;
+        y->left = T;
+
+        x->height = 1 + max(getHeight(x->left), getHeight(x->right));
+        y->height = 1 + max(getHeight(y->left), getHeight(y->right));
+
+        return x;
+    }
+
+    Node* insert(Node* current, int data)
+    {
+        if (current == nullptr)
         {
-            return new Node(key);
+            return new Node(data);
         }
-        else if (key < node->key)
+
+        if (data < current->data)
         {
-            node->left = insert(node->left, key);
+            current->left = insert(current->left, data);
         }
-        else if (key > node->key)
+        else if (data > current->data)
         {
-            node->right = insert(node->right, key);
+            current->right = insert(current->right, data);
         }
         else
         {
-            return node; 
+            cout << "Duplicate value " << data << " not inserted." << endl;
+            return current;
         }
 
-        node->height = 1 + max(getHeight(node->left), getHeight(node->right));
+        current->height = 1 + max(getHeight(current->left), getHeight(current->right));
+        int balance = getBalance(current);
 
-        int balance = getBalanceFactor(node);
-
-        if (balance > 1 && key < node->left->key)
+        if (balance > 1 && data < current->left->data)
         {
-            return rightRotate(node);
+            return rightRotate(current);
         }
-        else if (balance < -1 && key > node->right->key)
+        if (balance < -1 && data > current->right->data)
         {
-            return leftRotate(node);
+            return leftRotate(current);
         }
-        else if (balance > 1 && key > node->left->key)
+        if (balance > 1 && data > current->left->data)
         {
-            node->left = leftRotate(node->left);
-            return rightRotate(node);
+            current->left = leftRotate(current->left);
+            return rightRotate(current);
         }
-        else if (balance < -1 && key < node->right->key)
+        if (balance < -1 && data < current->right->data)
         {
-            node->right = rightRotate(node->right);
-            return leftRotate(node);
+            current->right = rightRotate(current->right);
+            return leftRotate(current);
         }
 
-        return node;
+        return current;
     }
 
-    Node* minValueNode(Node* node)
+    Node* deleteNode(Node* current, int data)
     {
-        Node* current = node;
+        if (current == nullptr)
+        {
+            return nullptr;
+        }
+
+        if (data < current->data)
+        {
+            current->left = deleteNode(current->left, data);
+        }
+        else if (data > current->data)
+        {
+            current->right = deleteNode(current->right, data);
+        }
+        else
+        {
+            if (current->left == nullptr && current->right == nullptr)
+            {
+                delete current;
+                return nullptr;
+            }
+            else if (current->left == nullptr)
+            {
+                Node* temp = current->right;
+                delete current;
+                return temp;
+            }
+            else if (current->right == nullptr)
+            {
+                Node* temp = current->left;
+                delete current;
+                return temp;
+            }
+            else
+            {
+                Node* temp = findMin(current->right);
+                current->data = temp->data;
+                current->right = deleteNode(current->right, temp->data);
+            }
+        }
+
+        current->height = 1 + max(getHeight(current->left), getHeight(current->right));
+        int balance = getBalance(current);
+
+        if (balance > 1 && getBalance(current->left) >= 0)
+        {
+            return rightRotate(current);
+        }
+        else if (balance < -1 && getBalance(current->right) <= 0)
+        {
+            return leftRotate(current);
+        }
+        else if (balance > 1 && getBalance(current->left) < 0)
+        {
+            current->left = leftRotate(current->left);
+            return rightRotate(current);
+        }
+        else if (balance < -1 && getBalance(current->right) > 0)
+        {
+            current->right = rightRotate(current->right);
+            return leftRotate(current);
+        }
+
+        return current;
+    }
+
+    bool search(Node* current, int value)
+    {
+        if (current == nullptr)
+        {
+            return false;
+        }
+
+        if (value == current->data)
+        {
+            return true;
+        }
+        else if (value < current->data)
+        {
+            return search(current->left, value);
+        }
+        else
+        {
+            return search(current->right, value);
+        }
+    }
+
+    void inOrder(Node* current)
+    {
+        if (current != nullptr)
+        {
+            inOrder(current->left);
+            cout << current->data << " ";
+            inOrder(current->right);
+        }
+    }
+
+    Node* findMin(Node* current)
+    {
         while (current && current->left != nullptr)
         {
             current = current->left;
@@ -113,102 +207,62 @@ public:
         return current;
     }
 
-    Node* deleteNode(Node* root, int key)
+public:
+    BST() : root(nullptr) {}
+
+    void insert(int value)
     {
-        if (!root)
-        {
-            return root;
-        }
-
-        if (key < root->key)
-        {
-            root->left = deleteNode(root->left, key);
-        }
-        else if (key > root->key)
-        {
-            root->right = deleteNode(root->right, key);
-        }
-        else
-        {
-            if (!root->left || !root->right)
-            {
-                Node* temp = root->left ? root->left : root->right;
-                delete root;
-                return temp;
-            }
-            else
-            {
-                Node* temp = minValueNode(root->right);
-                root->key = temp->key;
-                root->right = deleteNode(root->right, temp->key);
-            }
-        }
-
-        if (!root)
-        {
-            return root;
-        }
-
-        root->height = 1 + max(getHeight(root->left), getHeight(root->right));
-
-        int balance = getBalanceFactor(root);
-
-        if (balance > 1 && getBalanceFactor(root->left) >= 0)
-        {
-            return rightRotate(root);
-        }
-        else if (balance > 1 && getBalanceFactor(root->left) < 0)
-        {
-            root->left = leftRotate(root->left);
-            return rightRotate(root);
-        }
-        else if (balance < -1 && getBalanceFactor(root->right) <= 0)
-        {
-            return leftRotate(root);
-        }
-        else if (balance < -1 && getBalanceFactor(root->right) > 0)
-        {
-            root->right = rightRotate(root->right);
-            return leftRotate(root);
-        }
-
-        return root;
+        root = insert(root, value);
     }
 
-    void inOrder(Node* root)
+    void deleteNode(int value)
     {
-        if (root)
-        {
-            inOrder(root->left);
-            cout << root->key << " ";
-            inOrder(root->right);
-        }
+        root = deleteNode(root, value);
+    }
+
+    bool search(int value)
+    {
+        return search(root, value);
+    }
+
+    void inOrder()
+    {
+        inOrder(root);
+        cout << endl;
     }
 };
 
 int main()
 {
-    AVLTree avl;
-    Node* root = nullptr;
+    BST tree;
 
-    root = avl.insert(root, 10);
-    root = avl.insert(root, 9);
-    root = avl.insert(root, 8);
-    root = avl.insert(root, 6);
-    root = avl.insert(root, 7);
-    root = avl.insert(root, 12);
-    root = avl.insert(root, 11);
+    tree.insert(30);
+    tree.insert(22);
+    tree.insert(8);
+    tree.insert(9);
+    tree.insert(40);
+    tree.insert(45);
+    tree.insert(32);
+    tree.insert(11);
+    tree.insert(10);
 
-    cout << "In-order traversal of the AVL tree before deletion:" << endl;
-    avl.inOrder(root);
-    cout << endl;
+    cout << "\nIn-order traversal of the BST: \n";
+    tree.inOrder();
 
-    root = avl.deleteNode(root, 10);
-    root = avl.deleteNode(root, 9);
-
-    cout << "In-order traversal of the AVL tree after deletion:" << endl;
-    avl.inOrder(root);
-    cout << endl;
+    int searchKey = 45;
+    if (tree.search(searchKey))
+    {
+        cout << "\nValue " << searchKey << " found in the BST.\n" << endl;
+        cout << "\nDeleting " << searchKey << "...";
+        tree.deleteNode(searchKey);
+        tree.deleteNode(22);
+        cout << "\nIn-order traversal after deletion: \n";
+        tree.inOrder();
+    }
+    else
+    {
+        cout << "Value " << searchKey << " not found in the BST." << endl;
+    }
 
     return 0;
 }
