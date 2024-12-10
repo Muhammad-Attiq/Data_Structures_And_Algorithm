@@ -74,7 +74,7 @@ public:
         }
         else
         {
-            return node; // Duplicate keys are not allowed
+            return node; 
         }
 
         node->height = 1 + max(getHeight(node->left), getHeight(node->right));
