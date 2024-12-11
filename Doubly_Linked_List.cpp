@@ -19,7 +19,6 @@ private:
 public:
     DoublyLinkedList() : head(nullptr), tail(nullptr) {}
 
-    // Insert at the beginning of the list
     void insertAtHead(int value)
     {
         Node* newNode = new Node(value);
@@ -50,7 +49,6 @@ public:
         }
     }
 
-    // Delete a node by value
     void deleteNode(int value)
     {
         Node* current = head;
@@ -83,7 +81,6 @@ public:
         cout << "Node with value " << value << " deleted.\n";
     }
 
-    // Search for a node by value
     bool search(int value)
     {
         Node* current = head;
@@ -100,7 +97,6 @@ public:
         return false;
     }
 
-    // Sort the list (Bubble Sort)
     void sortList()
     {
         if (head == nullptr) return;
@@ -122,7 +118,6 @@ public:
         } while (swapped);
     }
 
-    // Reverse the list
     void reverse()
     {
         Node* current = head;
@@ -141,7 +136,6 @@ public:
         }
     }
 
-    // Display the list from the head to the tail
     void displayForward() {
         Node* current = head;
         cout << "List (Head to Tail): ";
@@ -152,7 +146,6 @@ public:
         cout << endl;
     }
 
-    // Display the list from the tail to the head
     void displayBackward() {
         Node* current = tail;
         cout << "List (Tail to Head): ";
@@ -163,7 +156,6 @@ public:
         cout << endl;
     }
 
-    // Destructor to free memory
     ~DoublyLinkedList() {
         Node* current = head;
         while (current != nullptr) {
@@ -185,17 +177,17 @@ int main() {
     list.displayForward();
     list.displayBackward();
 
-    list.search(7); // Search for a node
+    list.search(7); 
 
-    list.deleteNode(5); // Delete a node
+    list.deleteNode(5); 
     list.displayForward();
 
     list.insertAtHead(15);
     list.insertAtHead(20);
-    list.sortList(); // Sort the list
+    list.sortList(); 
     list.displayForward();
 
-    list.reverse(); // Reverse the list
+    list.reverse(); 
     list.displayForward();
 
     return 0;
