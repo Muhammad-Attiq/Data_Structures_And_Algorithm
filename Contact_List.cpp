@@ -151,7 +151,7 @@ int main() {
 
     object.search_contact("Alex");
     object.search_contact("Gerald");
-    object.search_contact("CHris");
+    object.search_contact("Chris");
     object.search_contact("Bale");
     object.search_contact("Jericho");
     object.search_contact("David");
