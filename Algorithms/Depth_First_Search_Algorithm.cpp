@@ -1,110 +1,55 @@
 #include <iostream>
 #include <vector>
-#include <climits>
-#include <stdexcept>
 
 using namespace std;
 
-class stack
-{
-private:
-    vector<pair<int, int>> elements; // {node, current cost}
+class Graph {
+    int numVertices;                  
+    vector<vector<int>> adjList;        
 
 public:
-    void push(pair<int, int> element)
-    {
-        elements.push_back(element);
+    Graph(int vertices) {
+        numVertices = vertices;
+        adjList.resize(vertices);
     }
-    void pop()
-    {
-        if (!elements.empty())
-        {
-            elements.pop_back();
-        }
+
+    void addEdge(int src, int dest) {
+        adjList[src].push_back(dest);   
+        adjList[dest].push_back(src);   
     }
-    bool isEmpty()
-    {
-        return elements.empty();
-    }
-    pair<int, int> top()
-    {
-        if (!elements.empty())
-        {
-            return elements.back();
-        }
-        throw runtime_error("Stack is empty.");
-    }
-};
 
-void depth_first_search(int src, int des, vector<vector<int>> &graph, vector<string> &node)
-{
-    int numNodes = graph.size();
+    void DFSUtil(int vertex, vector<bool>& visited) {
+        visited[vertex] = true;         
+        cout << vertex << " ";           
 
-    vector<bool> visited(numNodes, false);
-
-    int minCost = INT_MAX;
-
-    stack s;
-
-    s.push({src, 0});
-
-    while(!s.isEmpty())
-    {
-        pair <int, int> current = s.top();
-        s.pop();
-        int node = current.first;
-        int cost = current.second;
-
-        if(node == des)
-        {
-            minCost = min(minCost, cost);
-            continue;
-        }
-
-        visited[node] = true;
-
-        for(int i=0; i<numNodes; i++)
-        {
-            if(graph[node][i] != 1e9 && !visited[i])
-            {
-                s.push({ i, cost + graph[node][i] });
+        for (int i : adjList[vertex]) {
+            if (!visited[i]) {
+                DFSUtil(i, visited);
             }
         }
     }
 
-    if(minCost != INT_MAX)
-    {
-        cout << "COST BETWEEN PATH " << node[src] << " TO " << node[des] << " IS: " << minCost << endl;
+    void DFS(int startVertex) {
+        vector<bool> visited(numVertices, false); 
+
+        cout << "DFS traversal starting from vertex " << startVertex << ": ";
+        DFSUtil(startVertex, visited);
+        cout << endl;
     }
-    else
-    {
-        cout << "NO PATH FOUND" << endl;
-    }
-}
+};
 
+int main() {
+    Graph g(5);  
 
-int main()
-{
-    vector<string> nodes = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-    const int INF = 1e9;
-    vector<vector<int>> graph =
-    {
-        {0, INF, INF, 13, INF, INF, INF, INF, INF, INF},
-        {INF, 0, INF, INF, 14, 6, INF, INF, INF, INF},
-        {INF, INF, 0, 9, INF, INF, INF, INF, INF, 10},
-        {13, INF, INF, 0, INF, INF, INF, INF, 9, INF},
-        {INF, 14, INF, INF, 0, INF, 8, INF, INF, INF},
-        {INF, 6, 7, INF, INF, 0, 12, INF, INF, INF},
-        {INF, INF, INF, INF, 8, INF, 0, 15, INF, INF},
-        {INF, INF, INF, INF, INF, INF, 15, 0, INF, INF},
-        {INF, INF, INF, INF, INF, 11, INF, INF, 0, INF},
-        {INF, INF, INF, INF, INF, INF, INF, INF, 23, 0}
-    };
+    g.addEdge(0, 1);
+    g.addEdge(0, 4);
+    g.addEdge(1, 2);
+    g.addEdge(1, 3);
+    g.addEdge(1, 4);
+    g.addEdge(2, 3);
+    g.addEdge(3, 4);
 
-    int source = 5;
-    int destination = 6;
-
-    depth_first_search(source, destination, graph, nodes);
+    g.DFS(0);
 
     return 0;
 }
